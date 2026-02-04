@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarkIt - Attendance Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 50%);
+            animation: bgShift 15s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Header */
+        header {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .nav-btn.active {
+            background: var(--gradient-1);
+            border-color: var(--primary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--gradient-1);
+            border-radius: 2px;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-1);
+        }
+
+        .stat-card.theory::before { background: var(--gradient-1); }
+        .stat-card.practical::before { background: var(--gradient-2); }
+        .stat-card.overall::before { background: var(--gradient-3); }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card.theory .stat-value { color: #667eea; }
+        .stat-card.practical .stat-value { color: #f5576c; }
+        .stat-card.overall .stat-value { color: #00f2fe; }
+
+        .stat-detail {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .stat-card.theory .progress-fill { background: var(--gradient-1); }
+        .stat-card.practical .progress-fill { background: var(--gradient-2); }
+        .stat-card.overall .progress-fill { background: var(--gradient-3); }
+
+        /* Forms */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Timetable */
+        .timetable-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .timetable-day {
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .day-header {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .subject-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+        }
+
+        .subject-tag.theory {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: #667eea;
+        }
+
+        .subject-tag.practical {
+            background: rgba(245, 87, 108, 0.1);
+            border-color: rgba(245, 87, 108, 0.3);
+            color: #f5576c;
+        }
+
+        /* Subject List */
+        .subject-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .subject-item {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .subject-item:hover {
+            border-color: var(--primary);
+        }
+
+        .subject-info {
+            flex: 1;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subject-type {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Attendance Update */
+        .attendance-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .attendance-item {
+            background: var(--bg-dark);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attendance-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .toggle-btn {
+            padding: 0.5rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+        }
+
+        .toggle-btn.present {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .toggle-btn.absent {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 1rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideInRight 0.5s ease-out;
+            max-width: 400px;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.warning { border-left-color: var(--warning); }
+        .notification.success { border-left-color: var(--success); }
+        .notification.danger { border-left-color: var(--danger); }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-message {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .nav-buttons { flex-wrap: wrap; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .logo h1 { font-size: 1.5rem; }
+            header { padding: 1rem; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">M</div>
+                <h1>MarkIt</h1>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showSection('update')">Update Attendance</button>
+                <button class="nav-btn" onclick="showSection('timetable')">Timetable</button>
+                <button class="nav-btn" onclick="showSection('subjects')">Subjects</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card theory">
+                    <div class="stat-label">Theory Attendance</div>
+                    <div class="stat-value" id="theoryPercentage">0%</div>
+                    <div class="stat-detail" id="theoryDetail">0 attended / 0 total</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="theoryProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card practical">
+                    <div class="stat-label">Practical Attendance</div>
+                    <div class="stat-value" id="practicalPercentage">0%</div>
+                    <div class="stat-detail" id="practicalDetail">0 attended / 0 total</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="practicalProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card overall">
+                    <div class="stat-label">Overall Attendance</div>
+                    <div class="stat-value" id="overallPercentage">0%</div>
+                    <div class="stat-detail" id="overallDetail">0 attended / 0 total</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="overallProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Attendance Trends</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Subject-wise Breakdown</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="subjectChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Attendance Section -->
+        <div id="update" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Update Today's Attendance</h2>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;" id="todayDate"></div>
+                </div>
+                <div id="attendanceList" class="attendance-grid"></div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="saveAttendance()">
+                        Save Attendance
+                    </button>
+                    <button class="btn btn-secondary" onclick="markAllPresent()">
+                        Mark All Present
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable Section -->
+        <div id="timetable" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Weekly Timetable</h2>
+                    <button class="btn btn-primary" onclick="showEditTimetable()">Edit Timetable</button>
+                </div>
+                <div id="timetableDisplay" class="timetable-grid"></div>
+            </div>
+
+            <div class="card" id="editTimetableCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Edit Timetable</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Day</label>
+                        <select id="editDay">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Subjects (comma-separated with type)</label>
+                        <input type="text" id="editSubjects" placeholder="e.g., Math-theory, Physics Lab-practical">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="updateTimetableDay()">Update Day</button>
+                    <button class="btn btn-secondary" onclick="hideEditTimetable()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects Section -->
+        <div id="subjects" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Subject Management</h2>
+                    <button class="btn btn-primary" onclick="showAddSubject()">Add Subject</button>
+                </div>
+                <div id="subjectsList" class="subject-list"></div>
+            </div>
+
+            <div class="card" id="addSubjectCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Add New Subject</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Subject Name</label>
+                        <input type="text" id="newSubjectName" placeholder="Enter subject name">
+                    </div>
+                    <div class="form-group">
+                        <label>Subject Type</label>
+                        <select id="newSubjectType">
+                            <option value="theory">Theory</option>
+                            <option value="practical">Practical</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+                    <button class="btn btn-secondary" onclick="hideAddSubject()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let subjects = [];
+        let timetable = {
+            Monday: [],
+            Tuesday: [],
+            Wednesday: [],
+            Thursday: [],
+            Friday: [],
+            Saturday: []
+        };
+        let attendanceData = {};
+        let lastUpdateDate = null;
+
+        // Charts
+        let trendChart = null;
+        let subjectChart = null;
+
+        // Initialize
+        function init() {
+            loadData();
+            setupCharts();
+            updateDashboard();
+            displayTimetable();
+            displaySubjects();
+            checkDailyUpdate();
+            requestNotificationPermission();
+            
+            // Set today's date
+            document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Check for updates every hour
+            setInterval(checkDailyUpdate, 3600000);
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const savedSubjects = localStorage.getItem('markit_subjects');
+            const savedTimetable = localStorage.getItem('markit_timetable');
+            const savedAttendance = localStorage.getItem('markit_attendance');
+            const savedLastUpdate = localStorage.getItem('markit_lastUpdate');
+
+            if (savedSubjects) subjects = JSON.parse(savedSubjects);
+            if (savedTimetable) timetable = JSON.parse(savedTimetable);
+            if (savedAttendance) attendanceData = JSON.parse(savedAttendance);
+            if (savedLastUpdate) lastUpdateDate = savedLastUpdate;
+
+            // Initialize with sample data if empty
+            if (subjects.length === 0) {
+                subjects = [
+                    { id: 1, name: 'Mathematics', type: 'theory' },
+                    { id: 2, name: 'Physics', type: 'theory' },
+                    { id: 3, name: 'Physics Lab', type: 'practical' },
+                    { id: 4, name: 'Chemistry', type: 'theory' },
+                    { id: 5, name: 'Chemistry Lab', type: 'practical' }
+                ];
+                saveData();
+            }
+
+            // Initialize timetable if empty
+            if (Object.values(timetable).every(day => day.length === 0)) {
+                timetable = {
+                    Monday: [1, 2, 4],
+                    Tuesday: [3, 1, 2],
+                    Wednesday: [2, 4, 5],
+                    Thursday: [1, 3, 4],
+                    Friday: [2, 4, 1],
+                    Saturday: [5, 3]
+                };
+                saveData();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('markit_subjects', JSON.stringify(subjects));
+            localStorage.setItem('markit_timetable', JSON.stringify(timetable));
+            localStorage.setItem('markit_attendance', JSON.stringify(attendanceData));
+            localStorage.setItem('markit_lastUpdate', lastUpdateDate);
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(sectionName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (sectionName === 'update') {
+                displayAttendanceUpdate();
+            } else if (sectionName === 'dashboard') {
+                updateDashboard();
+            }
+        }
+
+        // Dashboard
+        function updateDashboard() {
+            const stats = calculateAttendanceStats();
+            
+            // Update theory stats
+            document.getElementById('theoryPercentage').textContent = stats.theory.percentage + '%';
+            document.getElementById('theoryDetail').textContent = 
+                `${stats.theory.attended} attended / ${stats.theory.total} total`;
+            document.getElementById('theoryProgress').style.width = stats.theory.percentage + '%';
+
+            // Update practical stats
+            document.getElementById('practicalPercentage').textContent = stats.practical.percentage + '%';
+            document.getElementById('practicalDetail').textContent = 
+                `${stats.practical.attended} attended / ${stats.practical.total} total`;
+            document.getElementById('practicalProgress').style.width = stats.practical.percentage + '%';
+
+            // Update overall stats
+            document.getElementById('overallPercentage').textContent = stats.overall.percentage + '%';
+            document.getElementById('overallDetail').textContent = 
+                `${stats.overall.attended} attended / ${stats.overall.total} total`;
+            document.getElementById('overallProgress').style.width = stats.overall.percentage + '%';
+
+            // Update charts
+            updateCharts(stats);
+        }
+
+        function calculateAttendanceStats() {
+            let theoryAttended = 0, theoryTotal = 0;
+            let practicalAttended = 0, practicalTotal = 0;
+
+            Object.entries(attendanceData).forEach(([date, dayData]) => {
+                Object.entries(dayData).forEach(([subjectId, status]) => {
+                    const subject = subjects.find(s => s.id === parseInt(subjectId));
+                    if (subject) {
+                        if (subject.type === 'theory') {
+                            theoryTotal++;
+                            if (status === 'present') theoryAttended++;
+                        } else {
+                            practicalTotal++;
+                            if (status === 'present') practicalAttended++;
+                        }
+                    }
+                });
+            });
+
+            const totalAttended = theoryAttended + practicalAttended;
+            const totalClasses = theoryTotal + practicalTotal;
+
+            return {
+                theory: {
+                    attended: theoryAttended,
+                    total: theoryTotal,
+                    percentage: theoryTotal > 0 ? Math.round((theoryAttended / theoryTotal) * 100) : 0
+                },
+                practical: {
+                    attended: practicalAttended,
+                    total: practicalTotal,
+                    percentage: practicalTotal > 0 ? Math.round((practicalAttended / practicalTotal) * 100) : 0
+                },
+                overall: {
+                    attended: totalAttended,
+                    total: totalClasses,
+                    percentage: totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 0
+                }
+            };
+        }
+
+        // Charts
+        function setupCharts() {
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            const ctxSubject = document.getElementById('subjectChart').getContext('2d');
+
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Theory',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Practical',
+                        data: [],
+                        borderColor: '#f5576c',
+                        backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#f1f5f9' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            subjectChart = new Chart(ctxSubject, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(0, 242, 254, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(stats) {
+            // Update subject chart
+            const subjectStats = [];
+            subjects.forEach(subject => {
+                let attended = 0, total = 0;
+                Object.values(attendanceData).forEach(dayData => {
+                    if (dayData[subject.id]) {
+                        total++;
+                        if (dayData[subject.id] === 'present') attended++;
+                    }
+                });
+                subjectStats.push({
+                    name: subject.name,
+                    percentage: total > 0 ? Math.round((attended / total) * 100) : 0
+                });
+            });
+
+            subjectChart.data.labels = subjectStats.map(s => s.name);
+            subjectChart.data.datasets[0].data = subjectStats.map(s => s.percentage);
+            subjectChart.update();
+
+            // Update trend chart with last 7 days
+            const dates = Object.keys(attendanceData).sort().slice(-7);
+            const theoryTrend = [];
+            const practicalTrend = [];
+
+            dates.forEach(date => {
+                let theoryAttended = 0, theoryTotal = 0;
+                let practicalAttended = 0, practicalTotal = 0;
+
+                Object.entries(attendanceData[date]).forEach(([subjectId, status]) => {
+                    const subject = subjects.find(s => s.id === parseInt(subjectId));
+                    if (subject) {
+                        if (subject.type === 'theory') {
+                            theoryTotal++;
+                            if (status === 'present') theoryAttended++;
+                        } else {
+                            practicalTotal++;
+                            if (status === 'present') practicalAttended++;
+                        }
+                    }
+                });
+
+                theoryTrend.push(theoryTotal > 0 ? Math.round((theoryAttended / theoryTotal) * 100) : 0);
+                practicalTrend.push(practicalTotal > 0 ? Math.round((practicalAttended / practicalTotal) * 100) : 0);
+            });
+
+            trendChart.data.labels = dates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            trendChart.data.datasets[0].data = theoryTrend;
+            trendChart.data.datasets[1].data = practicalTrend;
+            trendChart.update();
+        }
+
+        // Attendance Update
+        function displayAttendanceUpdate() {
+            const today = new Date().toISOString().split('T')[0];
+            const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const todaySubjects = timetable[dayName] || [];
+
+            const container = document.getElementById('attendanceList');
+            container.innerHTML = '';
+
+            if (todaySubjects.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No classes scheduled for today.</p>';
+                return;
+            }
+
+            todaySubjects.forEach(subjectId => {
+                const subject = subjects.find(s => s.id === subjectId);
+                if (!subject) return;
+
+                const savedStatus = attendanceData[today]?.[subjectId] || null;
+
+                const item = document.createElement('div');
+                item.className = 'attendance-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="subject-name">${subject.name}</div>
+                        <div class="subject-type">${subject.type.charAt(0).toUpperCase() + subject.type.slice(1)}</div>
+                    </div>
+                    <div class="attendance-toggle">
+                        <button class="toggle-btn ${savedStatus === 'present' ? 'present' : ''}" 
+                                onclick="toggleAttendance(${subjectId}, 'present')">
+                            Present
+                        </button>
+                        <button class="toggle-btn ${savedStatus === 'absent' ? 'absent' : ''}" 
+                                onclick="toggleAttendance(${subjectId}, 'absent')">
+                            Absent
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        let tempAttendance = {};
+
+        function toggleAttendance(subjectId, status) {
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!tempAttendance[today]) {
+                tempAttendance[today] = { ...attendanceData[today] } || {};
+            }
+
+            if (tempAttendance[today][subjectId] === status) {
+                delete tempAttendance[today][subjectId];
+            } else {
+                tempAttendance[today][subjectId] = status;
+            }
+
+            displayAttendanceUpdate();
+        }
+
+        function saveAttendance() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!attendanceData[today]) {
+                attendanceData[today] = {};
+            }
+
+            Object.assign(attendanceData[today], tempAttendance[today] || {});
+            lastUpdateDate = today;
+            tempAttendance = {};
+            
+            saveData();
+            showNotification('Success', 'Attendance saved successfully!', 'success');
+            updateDashboard();
+        }
+
+        function markAllPresent() {
+            const today = new Date().toISOString().split('T')[0];
+            const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const todaySubjects = timetable[dayName] || [];
+
+            if (!tempAttendance[today]) {
+                tempAttendance[today] = {};
+            }
+
+            todaySubjects.forEach(subjectId => {
+                tempAttendance[today][subjectId] = 'present';
+            });
+
+            displayAttendanceUpdate();
+        }
+
+        // Timetable
+        function displayTimetable() {
+            const container = document.getElementById('timetableDisplay');
+            container.innerHTML = '';
+
+            Object.entries(timetable).forEach(([day, subjectIds]) => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'timetable-day';
+                
+                let subjectsHTML = '';
+                subjectIds.forEach(id => {
+                    const subject = subjects.find(s => s.id === id);
+                    if (subject) {
+                        subjectsHTML += `<span class="subject-tag ${subject.type}">${subject.name}</span>`;
+                    }
+                });
+
+                dayDiv.innerHTML = `
+                    <div class="day-header">${day}</div>
+                    <div>${subjectsHTML || '<span style="color: var(--text-secondary);">No classes</span>'}</div>
+                `;
+                container.appendChild(dayDiv);
+            });
+        }
+
+        function showEditTimetable() {
+            document.getElementById('editTimetableCard').style.display = 'block';
+        }
+
+        function hideEditTimetable() {
+            document.getElementById('editTimetableCard').style.display = 'none';
+        }
+
+        function updateTimetableDay() {
+            const day = document.getElementById('editDay').value;
+            const subjectsInput = document.getElementById('editSubjects').value;
+            
+            const subjectNames = subjectsInput.split(',').map(s => s.trim());
+            const subjectIds = [];
+
+            subjectNames.forEach(nameWithType => {
+                const [name, type] = nameWithType.split('-').map(s => s.trim().toLowerCase());
+                let subject = subjects.find(s => s.name.toLowerCase() === name && s.type === type);
+                
+                if (!subject) {
+                    const newId = Math.max(...subjects.map(s => s.id), 0) + 1;
+                    subject = { id: newId, name: nameWithType.split('-')[0].trim(), type: type || 'theory' };
+                    subjects.push(subject);
+                }
+                
+                subjectIds.push(subject.id);
+            });
+
+            timetable[day] = subjectIds;
+            saveData();
+            displayTimetable();
+            displaySubjects();
+            hideEditTimetable();
+            showNotification('Success', 'Timetable updated successfully!', 'success');
+        }
+
+        // Subjects
+        function displaySubjects() {
+            const container = document.getElementById('subjectsList');
+            container.innerHTML = '';
+
+            subjects.forEach(subject => {
+                const stats = calculateSubjectStats(subject.id);
+                const item = document.createElement('div');
+                item.className = 'subject-item';
+                item.innerHTML = `
+                    <div class="subject-info">
+                        <div class="subject-name">${subject.name}</div>
+                        <div class="subject-type">
+                            ${subject.type.charAt(0).toUpperCase() + subject.type.slice(1)} • 
+                            ${stats.percentage}% (${stats.attended}/${stats.total})
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteSubject(${subject.id})">Delete</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function calculateSubjectStats(subjectId) {
+            let attended = 0, total = 0;
+            Object.values(attendanceData).forEach(dayData => {
+                if (dayData[subjectId]) {
+                    total++;
+                    if (dayData[subjectId] === 'present') attended++;
+                }
+            });
+            return {
+                attended,
+                total,
+                percentage: total > 0 ? Math.round((attended / total) * 100) : 0
+            };
+        }
+
+        function showAddSubject() {
+            document.getElementById('addSubjectCard').style.display = 'block';
+        }
+
+        function hideAddSubject() {
+            document.getElementById('addSubjectCard').style.display = 'none';
+            document.getElementById('newSubjectName').value = '';
+        }
+
+        function addSubject() {
+            const name = document.getElementById('newSubjectName').value.trim();
+            const type = document.getElementById('newSubjectType').value;
+
+            if (!name) {
+                showNotification('Error', 'Please enter a subject name', 'danger');
+                return;
+            }
+
+            const newId = Math.max(...subjects.map(s => s.id), 0) + 1;
+            subjects.push({ id: newId, name, type });
+            
+            saveData();
+            displaySubjects();
+            hideAddSubject();
+            showNotification('Success', 'Subject added successfully!', 'success');
+        }
+
+        function deleteSubject(id) {
+            if (!confirm('Are you sure you want to delete this subject?')) return;
+
+            subjects = subjects.filter(s => s.id !== id);
+            
+            // Remove from timetable
+            Object.keys(timetable).forEach(day => {
+                timetable[day] = timetable[day].filter(subId => subId !== id);
+            });
+
+            // Remove from attendance data
+            Object.keys(attendanceData).forEach(date => {
+                delete attendanceData[date][id];
+            });
+
+            saveData();
+            displaySubjects();
+            displayTimetable();
+            updateDashboard();
+            showNotification('Success', 'Subject deleted successfully!', 'success');
+        }
+
+        // Notifications
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+
+            // Browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            }
+        }
+
+        function checkDailyUpdate() {
+            const today = new Date().toISOString().split('T')[0];
+            const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const todaySubjects = timetable[dayName] || [];
+
+            if (todaySubjects.length > 0 && lastUpdateDate !== today) {
+                const currentHour = new Date().getHours();
+                if (currentHour >= 18) { // After 6 PM
+                    showNotification(
+                        'Attendance Reminder',
+                        'You haven\'t updated today\'s attendance yet!',
+                        'warning'
+                    );
+                }
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
